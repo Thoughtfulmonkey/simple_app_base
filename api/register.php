@@ -11,6 +11,7 @@
     if ( isJson($postdata) ){
 
         require './connection.php';
+        require './utils.php';
 
         try {
             $jsonData = json_decode($postdata, true);
@@ -30,7 +31,7 @@
             $stmt->execute();
             $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            // Correct password?
+            // Token found?
             if (sizeof($result) == 0){
 
                 echo '{"result": "error", "message": "The invite is invalid or has expired"}';
@@ -43,7 +44,7 @@
             $stmt->execute();
             $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-            // Correct password?
+            // Username taken
             if (sizeof($result) > 0){
 
                 echo '{"result": "error", "message": "That username is taken"}';
@@ -55,8 +56,12 @@
             // Hash password
             $password_hash = password_hash($newPassword, PASSWORD_BCRYPT);
 
+            // Generate public ID
+            $publicID = gen_pubic_id(); // TODO: prevent duplicates
+
             // Create user
-            $stmt = $conn->prepare('INSERT INTO `'.$prefix.'users` (username, password, role) VALUES(:username, :password, 1)');
+            $stmt = $conn->prepare('INSERT INTO `'.$prefix.'users` (public_id, username, password, role) VALUES(:pubid, :username, :password, 2)');
+            $stmt->bindParam(':pubid', $publicID, PDO::PARAM_STR);
             $stmt->bindParam(':username', $newusername, PDO::PARAM_STR);
             $stmt->bindParam(':password', $password_hash, PDO::PARAM_STR);
             $stmt->execute();

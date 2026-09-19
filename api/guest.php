@@ -12,6 +12,7 @@
     if ( isJson($postdata) ){
 
         require './connection.php';
+        require './utils.php';
 
         try {
             $jsonData = json_decode($postdata, true);
@@ -34,7 +35,7 @@
             }
 
             // Search for a guest user with matching username
-            $stmt = $conn->prepare('SELECT `username` FROM `'.$prefix.'users` WHERE `username`=:username AND `role`=3');
+            $stmt = $conn->prepare('SELECT `public_id` FROM `'.$prefix.'users` WHERE `username`=:username AND `role`=3');
             $stmt->bindParam(':username', $loginUsername, PDO::PARAM_STR);
             $stmt->execute();
             $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -43,16 +44,21 @@
             if (sizeof($result) == 1){
 
                 $_SESSION["status"] = "signedin";
+                $_SESSION["pubid"] = $result[0]['public_id'];
 
                 echo '{"result": "success"}';
             }
             else{
                 // Create the guest account
-                $stmt = $conn->prepare('INSERT INTO `'.$prefix.'users` (username, password, role) VALUES(:username, "guest", 3)');
+                $publicID = gen_pubic_id(); // TODO: prevent duplicates
+
+                $stmt = $conn->prepare('INSERT INTO `'.$prefix.'users` (public_id, username, password, role) VALUES(:pubid, :username, "guest", 3)');
+                $stmt->bindParam(':pubid', $publicID, PDO::PARAM_STR);  
                 $stmt->bindParam(':username', $loginUsername, PDO::PARAM_STR);
                 $stmt->execute();
 
                 $_SESSION["status"] = "signedin";
+                $_SESSION["pubid"] = $publicID;
 
                 echo '{"result": "success"}';
             }

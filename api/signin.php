@@ -23,9 +23,8 @@
             // set the PDO error mode to exception
             $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         
-            $stmt = $conn->prepare('SELECT `password` FROM `'.$prefix.'users` WHERE `username`=:username');
+            $stmt = $conn->prepare('SELECT `password`, `public_id` FROM `'.$prefix.'users` WHERE `username`=:username');
             $stmt->bindParam(':username', $loginUsername, PDO::PARAM_STR);
-            #$stmt->bindParam(':password', $loginPassword, PDO::PARAM_STR);
             $stmt->execute();
             $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
@@ -36,6 +35,7 @@
                 if (password_verify($loginPassword, $result[0]['password'])){
 
                     $_SESSION["status"] = "signedin";
+                    $_SESSION["pubid"] = $result[0]['public_id'];
 
                     echo '{"result": "success"}';
                 }
