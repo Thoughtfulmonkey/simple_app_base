@@ -15,6 +15,4 @@
         exit();
     }
 
-    echo "<p>No issue</p>";
-
 ?>
