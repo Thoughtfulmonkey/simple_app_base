@@ -11,7 +11,7 @@
     }
 
     if ($bump) {
-        echo '{"result": "error", message:"Not signed in"}';
+        echo '{"result": "error", "message":"Not signed in"}';
         exit();
     }
 
